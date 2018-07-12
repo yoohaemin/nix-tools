@@ -61,8 +61,6 @@ stdenv.mkDerivation ( rec {
     mkdir -p ${coursierCache}
     export COURSIER_CACHE=${coursierCache}
 
-    rm -f ${sbtBootDir}/sbt.boot.lock
-
     mkdir -p ./.sbt
     cat > ./.sbt/build.sbt <<EOF
     ${extraSbtSettings}
