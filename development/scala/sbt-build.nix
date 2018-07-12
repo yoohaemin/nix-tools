@@ -19,14 +19,17 @@ let
 
   coursierCache = "${tmpDir}/.coursier-cache";
 
+  sbtFlags = "-Dsbt.boot.directory=${sbtBootDir} -Dsbt.ivy.home=${sbtIvyHome} " +
+    (if stdenv.lib.inNixShell
+    then "-Dsbt.global.base=./.sbt -Dsbt.global.staging=./.staging"
+    else "-Dsbt.global.base=$(realpath ./.sbt) -Dsbt.global.staging=$(realpath ./.staging)");
 
-  sbtFlags = "-Dsbt.boot.directory=${sbtBootDir} -Dsbt.ivy.home=${sbtIvyHome} -Dsbt.global.base=$(realpath ./.sbt) -Dsbt.global.staging=$(realpath ./.staging)";
 in
 
 stdenv.mkDerivation ( rec {
   inherit name src;
 
-  SBT_OPTS = "${sbtFlags} ${extraSbtFlags}";
+  SBT_OPTS = sbtFlags;
 
   phases = ''
     setupPhase
@@ -40,6 +43,7 @@ stdenv.mkDerivation ( rec {
     ${if doScaladoc then "sbtScaladoc" else ""}
     sbtStage
     finalPhase
+    cleanupPhase
   '';
 
   setupPhase = ''
@@ -54,6 +58,8 @@ stdenv.mkDerivation ( rec {
     mkdir -p ${coursierCache}
     export COURSIER_CACHE=${coursierCache}
 
+    rm -f ${sbtBootDir}/sbt.boot.lock
+
     mkdir -p ./.sbt
     cat > ./.sbt/build.sbt <<EOF
     ${extraSbtSettings}
@@ -63,6 +69,8 @@ stdenv.mkDerivation ( rec {
     cat > ./.sbt/plugins/plugins.sbt <<EOF
     ${extraSbtPlugins}
     EOF
+
+    export SBT_OPTS="${sbtFlags} ${extraSbtFlags}"
 
     runHook postSetupPhase
   '';
@@ -99,6 +107,11 @@ stdenv.mkDerivation ( rec {
     if [ -d target/universal/stage ] ; then
       cp -ra target/universal/stage/* $out
     fi
+  '';
+
+  cleanupPhase = ''
+    rm -f ${sbtBootDir}/sbt.boot.lock
+    chmod -fR o+w ${sbtBootDir}
   '';
 
 } // args
