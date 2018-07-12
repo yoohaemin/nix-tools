@@ -19,11 +19,14 @@ let
 
   coursierCache = "${tmpDir}/.coursier-cache";
 
+
   sbtFlags = "-Dsbt.boot.directory=${sbtBootDir} -Dsbt.ivy.home=${sbtIvyHome} -Dsbt.global.base=$(realpath ./.sbt) -Dsbt.global.staging=$(realpath ./.staging)";
 in
 
 stdenv.mkDerivation ( rec {
   inherit name src;
+
+  SBT_OPTS = "${sbtFlags} ${extraSbtFlags}"
 
   phases = ''
     setupPhase
@@ -61,7 +64,7 @@ stdenv.mkDerivation ( rec {
     ${extraSbtPlugins}
     EOF
 
-    export SBT_OPTS="${sbtFlags} ${extraSbtFlags}"
+    # export SBT_OPTS="${sbtFlags} ${extraSbtFlags}"
 
     runHook postSetupPhase
   '';
