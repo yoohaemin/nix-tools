@@ -26,7 +26,7 @@ in
 stdenv.mkDerivation ( rec {
   inherit name src;
 
-  SBT_OPTS = "${sbtFlags} ${extraSbtFlags}"
+  SBT_OPTS = "${sbtFlags} ${extraSbtFlags}";
 
   phases = ''
     setupPhase
@@ -63,8 +63,6 @@ stdenv.mkDerivation ( rec {
     cat > ./.sbt/plugins/plugins.sbt <<EOF
     ${extraSbtPlugins}
     EOF
-
-    # export SBT_OPTS="${sbtFlags} ${extraSbtFlags}"
 
     runHook postSetupPhase
   '';
